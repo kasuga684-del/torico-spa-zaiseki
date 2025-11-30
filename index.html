@@ -78,14 +78,6 @@
             accent-color: #ec4899; 
             transform: scale(1.2);
         }
-        .note { 
-            font-size: 0.75rem; 
-            color: #ef4444; 
-            margin-top: 4px; 
-            background: #fef2f2; 
-            padding: 5px; 
-            border-radius: 6px;
-        }
         .submit-btn {
             background: linear-gradient(to right, #ec4899, #db2777);
             color: white;
@@ -116,7 +108,7 @@
 
         <form id="applicationForm" class="space-y-6 hidden">
             <input type="hidden" id="userId" name="userId">
-            <!-- ★合言葉：在籍用 -->
+            <!-- 合言葉：在籍用 -->
             <input type="hidden" name="form_type" value="zaiseki">
             
             <!-- サイト -->
@@ -224,7 +216,7 @@
             </div>
 
             <div class="pt-4 pb-8">
-                <!-- ★修正：IDを追加しました -->
+                <!-- ★IDを追加しました -->
                 <button type="button" id="submitBtn" class="submit-btn">
                     この内容で送信する <i class="fas fa-paper-plane ml-2"></i>
                 </button>
@@ -232,11 +224,13 @@
         </form>
     </div>
 
-    <!-- ★ここから下が抜けていました！送信機能を復活させました -->
     <script>
         // ==========================================
         // ★設定エリア (Candy Splash 在籍用)
+        // ここに在籍用のLIFF IDを入れてください！
         const MY_LIFF_ID = '2008582218-KbYWgaBz'; 
+        
+        // GASのURL (出稼ぎ用と同じ分岐対応版URL)
         const GAS_URL    = 'https://script.google.com/macros/s/AKfycbzy1t4ubKdZdSQyCH1UPX60KrxQPF910Rp_Bk5dDHhI_VR-jUXyQHldsdl_v6koW2Jd/exec';
         // ==========================================
 
