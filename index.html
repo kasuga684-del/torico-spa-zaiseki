@@ -6,6 +6,7 @@
     <title>在籍面接エントリー</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700&display=swap');
         
@@ -99,9 +100,7 @@
         .submit-btn:active {
             transform: scale(0.98);
         }
-        /* プレビュー用：最初から表示する */
-        .hidden { display: block !important; }
-        #loading { display: none !important; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
@@ -109,12 +108,15 @@
     <div class="container-box">
         <h1 class="form-title"><i class="fas fa-heart text-pink-400 mr-2"></i>在籍面接エントリー</h1>
 
-        <!-- プレビューモード表示 -->
-        <p class="text-center text-xs text-gray-400 mb-4 bg-gray-100 py-1 rounded">※現在デザイン確認モードです</p>
+        <div id="loading" class="text-center py-10">
+            <i class="fas fa-spinner fa-spin text-4xl text-pink-400"></i>
+            <p class="text-pink-400 mt-2">読み込み中...</p>
+        </div>
+        <p id="statusMessage" class="hidden text-center text-xs text-pink-400 mb-4"></p>
 
-        <form class="space-y-6">
+        <form id="applicationForm" class="space-y-6 hidden">
             <input type="hidden" id="userId" name="userId">
-            <!-- 合言葉：在籍用 -->
+            <!-- ★合言葉：在籍用 -->
             <input type="hidden" name="form_type" value="zaiseki">
             
             <!-- サイト -->
@@ -222,16 +224,22 @@
             </div>
 
             <div class="pt-4 pb-8">
-                <!-- type="button" はプレビュー用 -->
-                <button type="button" class="submit-btn">
+                <!-- ★修正：IDを追加しました -->
+                <button type="button" id="submitBtn" class="submit-btn">
                     この内容で送信する <i class="fas fa-paper-plane ml-2"></i>
                 </button>
             </div>
         </form>
     </div>
 
+    <!-- ★ここから下が抜けていました！送信機能を復活させました -->
     <script>
-        // 選択肢の自動生成
+        // ==========================================
+        // ★設定エリア (Candy Splash 在籍用)
+        const MY_LIFF_ID = '2008582218-KbYWgaBz'; 
+        const GAS_URL    = 'https://script.google.com/macros/s/AKfycbzy1t4ubKdZdSQyCH1UPX60KrxQPF910Rp_Bk5dDHhI_VR-jUXyQHldsdl_v6koW2Jd/exec';
+        // ==========================================
+
         window.onload = function() {
             // 年齢 (18〜50歳)
             const ageSelect = document.getElementById('ageSelect');
@@ -267,8 +275,58 @@
                 timeSelect1.appendChild(op1_30);
                 timeSelect2.appendChild(op2_30);
             }
+            
+            initializeLiff();
         };
-    </script>
 
+        const form = document.getElementById('applicationForm');
+        const loading = document.getElementById('loading');
+        const statusMsg = document.getElementById('statusMessage');
+        const submitBtn = document.getElementById('submitBtn');
+        const userIdInput = document.getElementById('userId');
+
+        async function initializeLiff() {
+            try {
+                await liff.init({ liffId: MY_LIFF_ID });
+                if (!liff.isLoggedIn()) { liff.login(); return; }
+                const profile = await liff.getProfile();
+                userIdInput.value = profile.userId;
+                loading.style.display = 'none';
+                form.classList.remove('hidden');
+                statusMsg.textContent = `ログイン中: ${profile.displayName} 様`;
+                statusMsg.classList.remove('hidden');
+            } catch (err) {
+                loading.style.display = 'none';
+                alert('LINE認証エラー: ' + err);
+            }
+        }
+
+        // ★送信ボタンの処理を追加しました！
+        submitBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // 名前だけ簡易チェック
+            const nameInput = document.querySelector('input[name="name"]');
+            if (!nameInput.value) {
+                alert('お名前を入力してください');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '送信中... <i class="fas fa-spinner fa-spin"></i>';
+            const formData = new FormData(form);
+            
+            fetch(GAS_URL, { method: 'POST', mode: 'no-cors', body: formData })
+            .then(() => {
+                alert('送信完了！\n自動返信メッセージをご確認ください。');
+                liff.closeWindow();
+            })
+            .catch(error => {
+                alert('送信失敗。もう一度お試しください。');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'この内容で送信する <i class="fas fa-paper-plane ml-2"></i>';
+            });
+        });
+    </script>
 </body>
 </html>
